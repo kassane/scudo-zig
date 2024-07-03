@@ -1,0 +1,16 @@
+.{
+    .name = "scudoAllocator",
+    .version = "1.0.0",
+    .license = "Apache-2.0",
+    .minimum_zig_version = "0.13.0",
+    .paths = .{
+        "bindings",
+        "include",
+        "src",
+        "tools",
+        "LICENSE",
+        "README.md",
+        "build.zig",
+        "build.zig.zon",
+    },
+}
