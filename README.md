@@ -10,5 +10,7 @@ Scudo Allocator for Zig
 ## References
 
 - [LLVM-Doc: Scudo Allocator](https://llvm.org/docs/ScudoHardenedAllocator.html)
-- [SCUDO Hardened Allocator — Unofficial Internals (web-archive)](https://web.archive.org/web/20230922193604/https://trenchant.io/scudo-hardened-allocator-unofficial-internals-documentation/) authored by [Rodrigo Rubira](https://github.com/rrbranco)
+- [SCUDO Hardened Allocator — Unofficial Internals](https://www.l3harris.com/newsroom/editorial/2023/10/scudo-hardened-allocator-unofficial-internals-documentation) authored by [Rodrigo Rubira](https://github.com/rrbranco)
+- [High level overview of Scudo](https://expertmiami.blogspot.com/2019/05/high-level-overview-of-scudo.html) by Kostya
+- [What is the Scudo hardened allocator?](https://expertmiami.blogspot.com/2019/05/what-is-scudo-hardened-allocator_10.html) by Kostya
 - [google/rust-scudo](https://github.com/google/rust-scudo)
