@@ -11,8 +11,10 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v4
-      - uses: korandoru/setup-zig@v1
+      - uses: mlugg/setup-zig@v1
         with:
-          zig-version: master
+          version: master
       - name: (Zig) Build
         run: zig build --summary all -Dtools -Dshared -freference-trace
+      - name: (Zig) Test
+        run: zig build test -freference-trace

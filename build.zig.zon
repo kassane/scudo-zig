@@ -1,6 +1,12 @@
 .{
     .name = "scudoAllocator",
     .version = "1.0.0",
+    .dependencies = .{
+        .runner = .{
+            .url = "git+https://gist.github.com/karlseguin/c6bea5b35e4e8d26af6f81c22cb5d76b/#f303e77231e14b405e4e800072e7deacac4a4881",
+            .hash = "12208ab39744c8c0909d53b8c9889aff0690930d20e98e4f650f9690310e9a860b14",
+        },
+    },
     .license = "Apache-2.0",
     .minimum_zig_version = "0.13.0",
     .paths = .{

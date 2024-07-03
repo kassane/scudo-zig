@@ -45,6 +45,7 @@ pub fn build(b: *std.Build) void {
             "-Wall",
             "-Wextra",
             "-pedantic",
+            "-fno-exceptions",
         },
     });
     if (lib.rootModuleTarget().cpu.arch.isAARCH64()) {
@@ -93,24 +94,44 @@ pub fn build(b: *std.Build) void {
         .name = "compute_size_class_config",
         .files = &.{"tools/compute_size_class_config.cpp"},
     });
+    buildtest(b, .{
+        .lib = lib,
+    });
 }
 
 fn buildExec(b: *std.Build, options: buildOptions) void {
     const exe = b.addExecutable(.{
-        .name = options.name,
+        .name = options.name.?,
         .target = options.lib.root_module.resolved_target.?,
         .optimize = options.lib.root_module.optimize.?,
     });
     exe.addCSourceFiles(.{
-        .files = options.files,
+        .files = options.files.?,
     });
     if (options.lib.rootModuleTarget().abi != .msvc) {
         exe.linkLibCpp();
     } else exe.linkLibC();
     b.installArtifact(exe);
 }
+
+fn buildtest(b: *std.Build, options: buildOptions) void {
+    const test_runner = b.dependency("runner", .{}).path("test_runner.zig");
+
+    const test_exe = b.addTest(.{
+        .target = options.lib.root_module.resolved_target.?,
+        .optimize = .Debug,
+        .root_source_file = b.path("bindings/scudoAllocator.zig"),
+        .test_runner = test_runner,
+    });
+    test_exe.linkLibrary(options.lib);
+
+    const run_test = b.addRunArtifact(test_exe);
+    const test_step = b.step("test", "Run test");
+    test_step.dependOn(&run_test.step);
+}
+
 const buildOptions = struct {
     lib: *std.Build.Step.Compile,
-    name: []const u8,
-    files: []const []const u8,
+    name: ?[]const u8 = null,
+    files: ?[]const []const u8 = null,
 };

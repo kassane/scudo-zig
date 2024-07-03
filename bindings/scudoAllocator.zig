@@ -5,23 +5,46 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 pub const ScudoAllocator = struct {
-    pub fn allocate(self: *ScudoAllocator) std.mem.Allocator {
+    pub fn init(allocation_type: allocationType) ScudoAllocator {
         return .{
-            .vptr = self,
+            .alloc = allocation_type,
+        };
+    }
+    pub fn allocator(self: *ScudoAllocator) std.mem.Allocator {
+        return .{
+            .ptr = self,
             .vtable = &.{
-                .alloc = alloc,
+                .alloc = switch (self.alloc) {
+                    .valloc => m_alloc,
+                    .malloc => v_alloc,
+                    .pvalloc => pv_alloc,
+                },
                 .resize = resize,
                 .free = free,
             },
         };
     }
 
-    fn alloc(_: *anyopaque, len: usize, log2_ptr_align: u8, _: usize) ?[*]u8 {
+    fn m_alloc(_: *anyopaque, len: usize, log2_ptr_align: u8, _: usize) ?[*]u8 {
+        std.debug.assert(log2_ptr_align <= comptime std.math.log2_int(
+            usize,
+            @alignOf(std.c.max_align_t),
+        ));
+        return @as(?[*]u8, @ptrCast(std.c.malloc(len)));
+    }
+    fn v_alloc(_: *anyopaque, len: usize, log2_ptr_align: u8, _: usize) ?[*]u8 {
         std.debug.assert(log2_ptr_align <= comptime std.math.log2_int(
             usize,
             @alignOf(std.c.max_align_t),
         ));
         return @as(?[*]u8, @ptrCast(valloc(len)));
+    }
+    fn pv_alloc(_: *anyopaque, len: usize, log2_ptr_align: u8, _: usize) ?[*]u8 {
+        std.debug.assert(log2_ptr_align <= comptime std.math.log2_int(
+            usize,
+            @alignOf(std.c.max_align_t),
+        ));
+        return @as(?[*]u8, @ptrCast(pvalloc(len)));
     }
 
     fn resize(ctx: *anyopaque, buf: []u8, _: u8, new_len: usize, _: usize) bool {
@@ -38,6 +61,14 @@ pub const ScudoAllocator = struct {
     fn free(_: *anyopaque, buf: []u8, _: u8, _: usize) void {
         std.c.free(buf.ptr);
     }
+
+    alloc: allocationType = .valloc,
+};
+
+const allocationType = enum {
+    malloc,
+    valloc,
+    pvalloc,
 };
 
 const __scudo_mallinfo_data_t = if (builtin.abi == .android) usize else u32;
@@ -89,3 +120,39 @@ pub extern fn malloc_info(options: c_int, stream: *std.c.FILE) c_int;
 pub extern fn posix_memalign(memptr: **anyopaque, alignment: usize, size: usize) c_int;
 pub extern fn mallinfo() __scudo_mallinfo;
 pub extern fn mallinfo2() __scudo_mallinfo2;
+
+test "allocation" {
+    {
+        var scudo = ScudoAllocator.init(.valloc);
+        const buf = try scudo.allocator().alloc(u8, 10);
+        try std.testing.expect(buf.len == 10);
+    }
+    {
+        var scudo = ScudoAllocator.init(.malloc);
+        const buf = try scudo.allocator().alloc(u8, 10);
+        try std.testing.expect(buf.len == 10);
+    }
+    {
+        var scudo = ScudoAllocator.init(.pvalloc);
+        const buf = try scudo.allocator().alloc(u8, 10);
+        try std.testing.expect(buf.len == 10);
+    }
+}
+
+test "Arena" {
+    {
+        var scudo_v = ScudoAllocator.init(.valloc);
+        const arena_v = std.heap.ArenaAllocator.init(scudo_v.allocator());
+        defer arena_v.deinit();
+    }
+    {
+        var scudo_m = ScudoAllocator.init(.malloc);
+        const arena_m = std.heap.ArenaAllocator.init(scudo_m.allocator());
+        defer arena_m.deinit();
+    }
+    {
+        var scudo_pv = ScudoAllocator.init(.pvalloc);
+        const arena_pv = std.heap.ArenaAllocator.init(scudo_pv.allocator());
+        defer arena_pv.deinit();
+    }
+}
