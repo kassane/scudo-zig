@@ -1,0 +1,28 @@
+name: cross
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        targets:
+          - aarch64-linux-gnu
+          - arm-linux-musleabi
+          - aarch64-linux-musl
+          - riscv64-linux-musl
+          - x86_64-linux-musl
+
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: master
+
+      - name: Build Summary ${{ matrix.targets }}
+        run: zig build --summary all -Dshared -freference-trace -Dtarget=${{ matrix.targets }}

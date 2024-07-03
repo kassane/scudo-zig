@@ -2,10 +2,32 @@
 
 Scudo Allocator for Zig
 
-## Require
+## Requires
 
 - [Zig](https://ziglang.org/download) v0.13.0 or master
 
+
+## How to use
+
+```bash
+# Create a project
+$ mkdir project_name
+$ cd project_name
+$ zig init
+
+# get zig-scudo (add on zon file - overwrited)
+zig fetch --save=scudo git+https://github.com/kassane/zig-scudo
+```
+
+In `build.zig`, add:
+```zig
+// pkg name (same in zon file)
+const scudo_dep = b.dependency("scudo",.{.target = target, .optimize = optimize });
+const scudo_module = scudo_dep.module("scudoAllocator"); // get lib + zig bindings
+
+// my project (executable)
+exe.root_module.addImport("scudoAllocator", scudo_module);
+```
 
 ## References
 

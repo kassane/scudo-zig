@@ -15,4 +15,4 @@ jobs:
         with:
           zig-version: master
       - name: (Zig) Build
-        run: zig build --summary all -Dtools -Dshared
+        run: zig build --summary all -Dtools -Dshared -freference-trace

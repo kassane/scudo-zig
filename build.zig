@@ -19,6 +19,10 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    if (shared)
+        lib.root_module.pic = true
+    else
+        lib.pie = true;
     lib.addIncludePath(b.path("include"));
     lib.addIncludePath(b.path("src"));
     lib.addCSourceFiles(.{
