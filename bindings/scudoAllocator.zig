@@ -5,7 +5,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 pub const ScudoAllocator = struct {
-    pub fn allocate(self: ScudoAllocator) std.mem.Allocator {
+    pub fn allocate(self: *ScudoAllocator) std.mem.Allocator {
         return .{
             .vptr = self,
             .vtable = &.{
