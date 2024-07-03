@@ -15,8 +15,8 @@ pub const ScudoAllocator = struct {
             .ptr = self,
             .vtable = &.{
                 .alloc = switch (self.alloc) {
-                    .valloc => m_alloc,
-                    .malloc => v_alloc,
+                    .valloc => v_alloc,
+                    .malloc => m_alloc,
                     .pvalloc => pv_alloc,
                 },
                 .resize = resize,
